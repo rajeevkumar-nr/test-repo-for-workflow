@@ -27,7 +27,7 @@ jobs:
     - name: Ensure build files exist
       run: |
         ls -l dist
-        zip -r dist.zip dist/ # Create a zip archive of the `dist` directory
+        zip -r dist/release.zip dist/ # Create a zip archive of the `dist` directory
 
     - name: List files in dist folder
       run: ls -l dist
@@ -37,5 +37,5 @@ jobs:
       with:
         token: ${{ secrets.GH_TOKEN }}
         prerelease: true
-        files: dist/*.zip
+        files: dist/release.zip
         discussion_category_name: Releases
