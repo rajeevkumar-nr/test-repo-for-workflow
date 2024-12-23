@@ -27,13 +27,11 @@ jobs:
     - name: List files in dist folder
       run: ls -l dist
 
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    - name: Create Github release
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
+        body_path: CHANGELOG-LATEST.md
+        token: ${{github.token}}
+        prerelease: true
+        files: dist/*.zip
+        discussion_category_name: Releases
