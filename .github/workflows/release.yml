@@ -31,7 +31,7 @@ jobs:
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Ensure this secret is correctly set
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
@@ -42,6 +42,31 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/*
-        asset_name: ${{ github.ref_name }}-$(basename ${{ steps.create_release.outputs.upload_url }})
+        asset_path: dist/* # This line is adjusted below
+        asset_name: filename.tar.gz # Adjust filename as needed
         asset_content_type: application/javascript
+
+    - name: Upload each file in dist as a separate release asset
+      uses: actions/github-script@v4
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+
+          const distDir = path.join(__dirname, '..', 'dist');
+          const files = fs.readdirSync(distDir);
+
+          for (const file of files) {
+            const filePath = path.join(distDir, file);
+            const fileContent = fs.readFileSync(filePath);
+
+            const result = await github.rest.repos.uploadReleaseAsset({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: ${{ steps.create_release.outputs.id }},
+            name: file,
+            data: fileContent,
+          });
+
+          core.info(`Uploaded ${file} - ${result.data.browser_download_url}`);
+          }
