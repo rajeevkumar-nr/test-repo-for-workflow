@@ -30,7 +30,6 @@ jobs:
     - name: Create Github release
       uses: softprops/action-gh-release@v1
       with:
-        body_path: CHANGELOG-LATEST.md
         token: ${{github.token}}
         prerelease: true
         files: dist/*.zip
