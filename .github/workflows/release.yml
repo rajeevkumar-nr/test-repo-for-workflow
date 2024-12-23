@@ -38,14 +38,6 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Upload assets to release
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/* # This line is adjusted below
-        asset_name: filename.tar.gz # Adjust filename as needed
-        asset_content_type: application/javascript
-
     - name: Upload each file in dist as a separate release asset
       uses: actions/github-script@v4
       with:
