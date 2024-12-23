@@ -6,7 +6,7 @@ on:
       - 'v*.*.*' # Triggers on version tags like v1.0.0
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,21 +21,10 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+    - name: Build project
+      run: npm run build
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Download build artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: dist-files
-
-    - name: List files in dist folder after download
+    - name: List files in dist folder
       run: ls -l dist
 
     - name: Create GitHub Release
@@ -48,18 +37,6 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
-
-    - name: Build project
-      run: npm run build
-
-    - name: List files in dist folder
-      run: ls -l dist
-
-    - name: Upload release assets
-      uses: actions/upload-artifact@v3
-      with:
-        name: dist-files
-        path: dist
 
     - name: Upload assets to release
       uses: actions/upload-release-asset@v1
