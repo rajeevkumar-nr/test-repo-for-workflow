@@ -31,7 +31,7 @@ jobs:
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Ensure this secret is correctly set
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} # Ensure this secret is correctly set
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
