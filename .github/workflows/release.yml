@@ -28,56 +28,11 @@ jobs:
       run: |
         ls -l dist
         zip -r dist.zip dist/  # Create a zip archive of the `dist` directory
-
-    - name: Check for existing release
-      id: check_release
-      uses: actions/github-script@v4
-      with:
-        script: |
-          try {
-            const release = await github.rest.repos.getReleaseByTag({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag: "${{ github.ref_name }}",
-            });
-            return {
-              id: release.data.id,
-              exists: true
-            };
-          } catch (error) {
-            if (error.status === 404) {
-              return {
-                exists: false
-              };
-            }
-            throw error;
-          }
-
-    - name: Create or Update GitHub Release
-      id: create_release
+    
+    - name: Publish GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        files: dist.zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      if: steps.check_release.outputs.exists == 'false'
-
-    - name: Update Existing Release
-      if: steps.check_release.outputs.exists == 'true'
-      uses: actions/github-script@v4
-      with:
-        script: |
-          const releaseId = ${{ steps.check_release.outputs.id }};
-          const uploadUrl = `https://uploads.github.com/repos/${context.repo.owner}/${context.repo.repo}/releases/${releaseId}/assets?name=dist.zip`;
-          await github.rest.repos.uploadReleaseAsset({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            release_id: releaseId,
-            name: "dist.zip",
-            data: fs.readFileSync('dist.zip'),
-            headers: {
-              "content-type": "application/zip",
-              "content-length": fs.statSync('dist.zip').size,
-            },
-          });
-          core.info('Updated existing release with new assets.');
+        token: ${{ secrets.GH_TOKEN }}
+        prerelease: true
+        files: dist/*.zip
+        discussion_category_name: Releases
