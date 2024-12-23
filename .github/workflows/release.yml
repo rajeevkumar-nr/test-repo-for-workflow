@@ -3,7 +3,7 @@ name: Build and Generate Assets
 on:
   push:
     tags:
-      - 'v*.*.*'  # Triggers on version tags like v1.0.0
+      - 'v*.*.*' # Triggers on version tags like v1.0.0
 
 jobs:
   release:
@@ -16,7 +16,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16'  # Match your project's Node.js version
+        node-version: '16' # Match your project's Node.js version
 
     - name: Install dependencies
       run: npm install
@@ -27,8 +27,11 @@ jobs:
     - name: Ensure build files exist
       run: |
         ls -l dist
-        zip -r dist.zip dist/  # Create a zip archive of the `dist` directory
-    
+        zip -r dist.zip dist/ # Create a zip archive of the `dist` directory
+
+    - name: List files in dist folder
+      run: ls -l dist
+
     - name: Publish GitHub Release
       uses: softprops/action-gh-release@v1
       with:
