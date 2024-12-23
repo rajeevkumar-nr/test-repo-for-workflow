@@ -37,28 +37,3 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
-
-    - name: Upload each file in dist as a separate release asset
-      uses: actions/github-script@v4
-      with:
-        script: |
-          const fs = require('fs');
-          const path = require('path');
-          const distDir = path.join(process.cwd(), 'dist');
-          const files = fs.readdirSync(distDir);
-          for (const file of files) {
-            const filePath = path.join(distDir, file);
-            const headers = {
-              'content-type': 'application/javascript',
-              'content-length': fs.statSync(filePath).size,
-            };
-            const assetUploadResponse = await github.rest.repos.uploadReleaseAsset({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: ${{ steps.create_release.outputs.id }},
-              name: file,
-              data: fs.createReadStream(filePath),
-              headers: headers,
-            });
-            core.info(`Uploaded ${file} - ${assetUploadResponse.data.browser_download_url}`);
-          }
