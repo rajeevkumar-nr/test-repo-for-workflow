@@ -31,7 +31,7 @@ jobs:
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} # Ensure this secret is correctly set
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
@@ -45,7 +45,7 @@ jobs:
           const fs = require('fs');
           const path = require('path');
 
-          const distDir = path.join(__dirname, '..', 'dist');
+          const distDir = path.join(process.cwd(), 'dist');
           const files = fs.readdirSync(distDir);
 
           for (const file of files) {
@@ -53,12 +53,12 @@ jobs:
             const fileContent = fs.readFileSync(filePath);
 
             const result = await github.rest.repos.uploadReleaseAsset({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            release_id: ${{ steps.create_release.outputs.id }},
-            name: file,
-            data: fileContent,
-          });
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: ${{ steps.create_release.outputs.id }},
+              name: file,
+              data: fileContent,
+            });
 
-          core.info(`Uploaded ${file} - ${result.data.browser_download_url}`);
+            core.info(`Uploaded ${file} - ${result.data.browser_download_url}`);
           }
