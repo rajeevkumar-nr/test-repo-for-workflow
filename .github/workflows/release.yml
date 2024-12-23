@@ -44,24 +44,21 @@ jobs:
         script: |
           const fs = require('fs');
           const path = require('path');
-
           const distDir = path.join(process.cwd(), 'dist');
           const files = fs.readdirSync(distDir);
-
           for (const file of files) {
             const filePath = path.join(distDir, file);
-          
-            const result = await github.rest.repos.uploadReleaseAsset({
+            const headers = {
+              'content-type': 'application/javascript',
+              'content-length': fs.statSync(filePath).size,
+            };
+            const assetUploadResponse = await github.rest.repos.uploadReleaseAsset({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              release_id: context.issue.number,  // Corrects context for the release ID
+              release_id: ${{ steps.create_release.outputs.id }},
               name: file,
-              file: filePath,  // Use the file path for `file` attribute, which requires path
-              headers: {
-                'content-type': 'application/javascript',
-                'content-length': fs.statSync(filePath).size,
-              },
+              data: fs.createReadStream(filePath),
+              headers: headers,
             });
-
-            core.info(`Uploaded ${file} - ${result.data.browser_download_url}`);
+            core.info(`Uploaded ${file} - ${assetUploadResponse.data.browser_download_url}`);
           }
