@@ -16,7 +16,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16'  # Specify the Node.js version you need
+        node-version: '16' # Specify the Node.js version you need
 
     - name: Install dependencies
       run: npm install
@@ -37,6 +37,7 @@ jobs:
       uses: actions/github-script@v4
       with:
         script: |
+          const { github, context } = require('@actions/github');
           try {
             const release = await github.rest.repos.getReleaseByTag({
               owner: context.repo.owner,
@@ -54,30 +55,10 @@ jobs:
             throw error;
           }
 
-    - name: Create or Update GitHub Release
+    - name: Publish GitHub Release
       uses: softprops/action-gh-release@v1
       with:
+        token: ${{ secrets.GH_TOKEN }}
+        prerelease: true
         files: dist.zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      if: steps.check_release.outputs.exists == 'false'
-
-    - name: Upload to Existing Release
-      if: steps.check_release.outputs.exists == 'true'
-      uses: actions/github-script@v4
-      with:
-        script: |
-          const fs = require('fs');
-          const releaseId = ${{ steps.check_release.outputs.id }};
-          const headers = { 'content-type': 'application/zip', 'content-length': fs.statSync('dist.zip').size };
-
-          const response = await github.rest.repos.uploadReleaseAsset({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            release_id: releaseId,
-            name: 'dist.zip',
-            data: fs.createReadStream('dist.zip'),
-            headers: headers,
-          });
-
-          core.info(`Asset uploaded: ${response.data.browser_download_url}`);
+        discussion_category_name: Releases
