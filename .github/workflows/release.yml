@@ -71,4 +71,3 @@ jobs:
             });
 
             console.log(`Uploaded ${file} - ${result.data.browser_download_url}`);
-          }
