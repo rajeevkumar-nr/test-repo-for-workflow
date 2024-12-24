@@ -33,6 +33,9 @@ jobs:
           echo "No dist folder found"; exit 1
         fi
 
+    - name: List files in dist folder
+      run: ls -l dist
+
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -44,7 +47,7 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Upload Minified JS Asset
+    - name: Upload assets to release
       uses: actions/github-script@v4
       with:
         script: |
@@ -52,27 +55,20 @@ jobs:
           const path = require('path');
           const { github, context } = require('@actions/github');
 
-          const distMinFile = path.join(process.cwd(), 'dist.min.js');
-      
-          if (!fs.existsSync(distMinFile)) {
-              throw new Error(`${distMinFile} does not exist`);
-          }
-      
-          const headers = {
-              'content-type': 'application/javascript',
-              'content-length': fs.statSync(distMinFile).size,
-          };
-      
-          const uploadUrl = context.payload.release.upload_url;  // Use the correctly obtained upload URL
-      
-          // Use the correct method and properties for the upload URL
-          const asset = await github.rest.repos.uploadReleaseAsset({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            release_id: context.payload.release.id,
-            name: 'dist.min.js',
-            data: fs.readFileSync(distMinFile),
-            headers: headers,
-          });
+          const distDir = path.join(process.cwd(), 'dist');
+          const files = fs.readdirSync(distDir);
 
-          console.log(`Uploaded ${asset.data.name} to ${asset.data.browser_download_url}`);
+          for (const file of files) {
+            const filePath = path.join(distDir, file);
+            const fileContent = fs.readFileSync(filePath);
+
+            const result = await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+              name: file,
+              data: fileContent,
+            });
+
+            console.log(`Uploaded ${file} - ${result.data.browser_download_url}`);
+          }
