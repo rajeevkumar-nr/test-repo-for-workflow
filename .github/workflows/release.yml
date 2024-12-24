@@ -16,7 +16,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16' # Match your project's Node.js version
+        node-version: '16'  # Specify the Node.js version you need
 
     - name: Install dependencies
       run: npm install
@@ -24,18 +24,60 @@ jobs:
     - name: Build project
       run: npm run build
 
-    - name: Ensure build files exist
+    - name: Archive build files
       run: |
-        ls -l dist
-        zip -r dist/release.zip dist/ # Create a zip archive of the `dist` directory
+        if [ -d "dist" ]; then
+          zip -r dist.zip dist/
+        else
+          echo "No dist folder found"; exit 1
+        fi
 
-    - name: List files in dist folder
-      run: ls -l dist
+    - name: Check for existing release
+      id: check_release
+      uses: actions/github-script@v4
+      with:
+        script: |
+          try {
+            const release = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: context.ref.replace('refs/tags/', ''),
+            });
+            return {
+              exists: true,
+              id: release.data.id,
+            };
+          } catch (error) {
+            if (error.status === 404) {
+              return { exists: false };
+            }
+            throw error;
+          }
 
-    - name: Publish GitHub Release
+    - name: Create or Update GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        token: ${{ secrets.GH_TOKEN }}
-        prerelease: true
-        files: dist/release.zip
-        discussion_category_name: Releases
+        files: dist.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.check_release.outputs.exists == 'false'
+
+    - name: Upload to Existing Release
+      if: steps.check_release.outputs.exists == 'true'
+      uses: actions/github-script@v4
+      with:
+        script: |
+          const fs = require('fs');
+          const releaseId = ${{ steps.check_release.outputs.id }};
+          const headers = { 'content-type': 'application/zip', 'content-length': fs.statSync('dist.zip').size };
+
+          const response = await github.rest.repos.uploadReleaseAsset({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: releaseId,
+            name: 'dist.zip',
+            data: fs.createReadStream('dist.zip'),
+            headers: headers,
+          });
+
+          core.info(`Asset uploaded: ${response.data.browser_download_url}`);
