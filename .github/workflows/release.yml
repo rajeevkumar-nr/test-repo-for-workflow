@@ -27,9 +27,6 @@ jobs:
     - name: List files in dist folder
       run: ls -l dist
 
-    - name: Copy files in dist folder (if needed)
-      run: cp -r dist/* another_directory/
-
     - name: Make a zip of the dist folder
       run: zip -r dist.zip dist/
 
