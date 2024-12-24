@@ -24,22 +24,19 @@ jobs:
     - name: Build project
       run: npm run build  # Ensure this builds your project appropriately for browser agents
 
-    - name: Minify JavaScript files
-      run: |
-        if [ -d "dist" ]; then
-          npm install -g terser
-          terser dist/*.js --compress --mangle --output dist.min.js
-        else
-          echo "No dist folder found"; exit 1
-        fi
-
     - name: List files in dist folder
       run: ls -l dist
+
+    - name: Copy files in dist folder (if needed)
+      run: cp -r dist/* another_directory/
+
+    - name: Make a zip of the dist folder
+      run: zip -r dist.zip dist/
 
     - name: Create GitHub release
       uses: softprops/action-gh-release@v1
       with:
         token: ${{ secrets.GH_TOKEN }}
         prerelease: true
-        files: dist/*
+        files: dist.zip
         discussion_category_name: Releases
