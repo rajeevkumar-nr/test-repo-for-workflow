@@ -50,22 +50,26 @@ jobs:
         script: |
           const fs = require('fs');
           const distMinFile = 'dist.min.js';
-
+      
           if (!fs.existsSync(distMinFile)) {
-            throw new Error(`${distMinFile} does not exist`);
+              throw new Error(`${distMinFile} does not exist`);
           }
-
+      
           const headers = {
-            'content-type': 'application/javascript',
-            'content-length': fs.statSync(distMinFile).size,
+              'content-type': 'application/javascript',
+              'content-length': fs.statSync(distMinFile).size,
           };
-
-          const uploadUrl = ${{ steps.create_release.outputs.upload_url }};
+      
+          const uploadUrl = context.payload.release.upload_url;  // Use the correctly obtained upload URL
+      
+          // Use the correct method and properties for the upload URL
           const asset = await github.rest.repos.uploadReleaseAsset({
-            url: uploadUrl,
-            headers,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: ${'steps.create_release.outputs.id'},
             name: 'dist.min.js',
             data: fs.createReadStream(distMinFile),
+            headers,
           });
-
+      
           core.info(`Uploaded ${asset.data.browser_download_url}`);
