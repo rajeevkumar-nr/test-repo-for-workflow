@@ -36,4 +36,3 @@ jobs:
         token: ${{ secrets.GH_TOKEN }}
         prerelease: true
         files: dist.zip
-        discussion_category_name: Releases
