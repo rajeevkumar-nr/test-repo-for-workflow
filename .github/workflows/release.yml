@@ -1,12 +1,12 @@
-name: Build and Generate Assets
+name: Build and Release Browser Assets
 
 on:
   push:
     tags:
-      - 'v*.*.*' # Triggers on version tags like v1.0.0
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0
 
 jobs:
-  release:
+  build-and-release:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,49 +16,56 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16' # Specify the Node.js version you need
+        node-version: '16'  # Specify the Node.js version you need
 
     - name: Install dependencies
       run: npm install
 
     - name: Build project
-      run: npm run build
+      run: npm run build  # Ensure this builds your project appropriately for browser agents
 
-    - name: Archive build files
+    - name: Minify JavaScript files
       run: |
         if [ -d "dist" ]; then
-          zip -r dist.zip dist/
+          npm install -g terser
+          terser dist/*.js --compress --mangle --output dist.min.js
         else
           echo "No dist folder found"; exit 1
         fi
 
-    - name: Check for existing release
-      id: check_release
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Minified JS Asset
       uses: actions/github-script@v4
       with:
         script: |
-          const { github, context } = require('@actions/github');
-          try {
-            const release = await github.rest.repos.getReleaseByTag({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag: context.ref.replace('refs/tags/', ''),
-            });
-            return {
-              exists: true,
-              id: release.data.id,
-            };
-          } catch (error) {
-            if (error.status === 404) {
-              return { exists: false };
-            }
-            throw error;
+          const fs = require('fs');
+          const distMinFile = 'dist.min.js';
+
+          if (!fs.existsSync(distMinFile)) {
+            throw new Error(`${distMinFile} does not exist`);
           }
 
-    - name: Publish GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        token: ${{ secrets.GH_TOKEN }}
-        prerelease: true
-        files: dist.zip
-        discussion_category_name: Releases
+          const headers = {
+            'content-type': 'application/javascript',
+            'content-length': fs.statSync(distMinFile).size,
+          };
+
+          const uploadUrl = ${{ steps.create_release.outputs.upload_url }};
+          const asset = await github.rest.repos.uploadReleaseAsset({
+            url: uploadUrl,
+            headers,
+            name: 'dist.min.js',
+            data: fs.createReadStream(distMinFile),
+          });
+
+          core.info(`Uploaded ${asset.data.browser_download_url}`);
