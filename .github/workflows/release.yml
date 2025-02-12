@@ -2,8 +2,8 @@ name: Build and Release Browser Assets
 
 on:
   push:
-    tags:
-      - 'v*.*.*'  # Triggers on version tags like v1.0.0
+    branches:
+      - main
 
 jobs:
   build-and-release:
