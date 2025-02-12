@@ -9,6 +9,7 @@ export default class DashTracker extends nrvideo.VideoTracker {
   getTrackerName() {
     return "dash";
   }
+
   getTrackerVersion() {
     return version;
   }
