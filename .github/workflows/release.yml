@@ -9,6 +9,11 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
 
+    # env:
+    #   S3_BUCKET: ${{ secrets.AWS_S3_BUCKET_STAGING }}
+    #   S3_ACCESS: ${{ secrets.AWS_S3_ACCESS }}
+    #   S3_KEY: ${{ secrets.AWS_S3_KEY }}
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -27,12 +32,15 @@ jobs:
     - name: List files in dist folder
       run: ls -l dist
 
-    - name: Make a zip of the dist folder
-      run: zip -r dist.zip dist/
+    # - name: Make a zip of the dist folder
+    #   run: zip -r dist.zip dist/
 
-    - name: Create GitHub release
-      uses: softprops/action-gh-release@v1
-      with:
-        token: ${{ secrets.GH_TOKEN }}
-        prerelease: true
-        files: dist.zip
+    # - name: Configure AWS Credentials
+    #   uses: aws-actions/configure-aws-credentials@v2
+    #   with:
+    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     aws-secret-access-key: ${{ secrets.AWS_S3_SECRET }}
+    #     aws-region: us-east-1
+    # - name: Copy files to the CDN with the AWS CLI
+    #   run: |
+    #     aws s3 cp dist s3://${S3_BUCKET}/${S3_KEY}/
