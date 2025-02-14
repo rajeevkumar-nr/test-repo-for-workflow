@@ -43,4 +43,4 @@ jobs:
         aws-region: us-east-1
     - name: Copy files to the CDN with the AWS CLI
       run: |
-        aws s3 cp dist/newrelic-video-dash.latest.min.js s3://${S3_BUCKET}/${S3_KEY}/newrelic-video-dash.latest.min.js
+        aws s3 cp dist/newrelic-video-dash.min.js s3://${S3_BUCKET}/${S3_KEY}/newrelic-video-dash.latest.min.js
