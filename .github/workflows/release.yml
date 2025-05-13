@@ -47,5 +47,5 @@ jobs:
 
     - name: Upload Versioned and Latest min.js
       run: |
-        aws s3 cp dist/newrelic-video-videojs.min.js s3://nr-downloads-main/media-agents/browser/videojs/newrelic-video-videojs.${{ env.PACKAGE_VERSION }}.min.js
-        aws s3 cp dist/newrelic-video-videojs.min.js s3://nr-downloads-main/media-agents/browser/videojs/newrelic-video-videojs.latest.min.js
+        aws s3 cp dist/newrelic-video-dash.min.js s3://nr-downloads-main/media-agents/browser/videojs/newrelic-video-videojs.${{ env.PACKAGE_VERSION }}.min.js
+        aws s3 cp dist/newrelic-video-dash.min.js s3://nr-downloads-main/media-agents/browser/videojs/newrelic-video-videojs.latest.min.js
