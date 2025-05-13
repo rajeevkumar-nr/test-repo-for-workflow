@@ -13,10 +13,12 @@ jobs:
       S3_BUCKET: ${{ secrets.AWS_S3_BUCKET_STAGING }}
       S3_ACCESS: ${{ secrets.AWS_S3_ACCESS }}
       S3_KEY: ${{ secrets.AWS_S3_KEY }}
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 # Required to fetch all history for versioning
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
@@ -32,8 +34,9 @@ jobs:
     - name: List files in dist folder
       run: ls -l dist
 
-    # - name: Make a zip of the dist folder
-    #   run: zip -r dist.zip dist/
+    - name: Get Package Version
+      id: package-version
+      run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -41,6 +44,8 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_S3_SECRET }}
         aws-region: us-east-1
-    - name: Copy files to the CDN with the AWS CLI
+
+    - name: Upload Versioned and Latest min.js
       run: |
-        aws s3 cp dist/newrelic-video-dash.min.js s3://nr-downloads-main/media-agents/browser/videojs/
+        aws s3 cp dist/newrelic-video-videojs.min.js s3://nr-downloads-main/media-agents/browser/videojs/newrelic-video-videojs.${{ env.PACKAGE_VERSION }}.min.js
+        aws s3 cp dist/newrelic-video-videojs.min.js s3://nr-downloads-main/media-agents/browser/videojs/newrelic-video-videojs.latest.min.js
