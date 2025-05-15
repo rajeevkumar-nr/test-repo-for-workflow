@@ -9,7 +9,7 @@ export default class DashTracker extends nrvideo.VideoTracker {
 
   getTrackerName() {
     console.log("DashTracker setPlayer");
-    return "dash";
+    return "dash2";
     
   }
 
