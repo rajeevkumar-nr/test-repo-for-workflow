@@ -4,6 +4,7 @@ import { version } from "../package.json";
 export default class DashTracker extends nrvideo.VideoTracker {
   setPlayer(player, tag) {
     nrvideo.VideoTracker.prototype.setPlayer.call(this, player, tag);
+    console.log("DashTracker setPlayer", player, tag);
   }
 
   getTrackerName() {
